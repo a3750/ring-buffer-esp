@@ -40,7 +40,9 @@ uint8_t ring_buffer_dequeue(ring_buffer_t *buffer, char *data) {
     return 0;
   }
   
-  *data = buffer->buffer[buffer->tail_index];
+  if (data != NULL) {
+    *data = buffer->buffer[buffer->tail_index];
+  }
   buffer->tail_index = ((buffer->tail_index + 1) & RING_BUFFER_MASK(buffer));
   return 1;
 }
@@ -49,6 +51,13 @@ ring_buffer_size_t ring_buffer_dequeue_arr(ring_buffer_t *buffer, char *data, ri
   if(ring_buffer_is_empty(buffer)) {
     /* No items */
     return 0;
+  }
+
+  if (data == NULL) {
+    ring_buffer_size_t n = ring_buffer_num_items(buffer);
+    ring_buffer_size_t cnt = len < n ? len : n;
+    buffer->tail_index = ((buffer->tail_index + cnt) & RING_BUFFER_MASK(buffer));
+    return cnt;
   }
 
   char *data_ptr = data;
